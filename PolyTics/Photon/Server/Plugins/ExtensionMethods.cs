@@ -1,10 +1,10 @@
 namespace PolyTics.Photon.Server.Plugins
 {
-	using System.Collections;
-	using System.Collections.Generic;
-	using System.Linq;
-	using Photon.Hive.Plugin;
-	
+    using System.Collections;
+    using System.Collections.Generic;
+    using System.Linq;
+    using Photon.Hive.Plugin;
+
     public static partial class ExtensionMethods
     {
         #region TryGetActor

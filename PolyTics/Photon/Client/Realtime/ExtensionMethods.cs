@@ -1,9 +1,9 @@
 ﻿namespace PolyTics.Photon.Client.Realtime
-
+{
     using System;
     using System.Collections.Generic;
     using ExitGames.Client.Photon;
-	using Photon.Realtime;
+    using Photon.Realtime;
     using System.Linq;
 
     public static partial class ExtensionMethods
