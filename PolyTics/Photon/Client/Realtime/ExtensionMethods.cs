@@ -50,7 +50,7 @@
             int maxPlayers = room.MaxPlayers;
             if (room.MaxPlayers > 0 && hashSet.Count + room.PlayerCount > room.MaxPlayers)
             {
-                if (!room.PublishUserId)
+                if (!room.PlayerCount > 1 && room.Players.Values.Any(player => !player.IsLocal && string.IsNullOrEmpty(player.UserId)))
                 {
                     return false; // Publish UserId is disabled!
                 }
