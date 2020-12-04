@@ -12,104 +12,12 @@
 
         public static bool AddExpectedUser(this Room room, string userId, bool force = false)
         {
-            if (string.IsNullOrEmpty(userId))
-            {
-                return false;
-            }
-            if (room.ExpectedUsers != null && Array.IndexOf(room.ExpectedUsers, userId) != -1)
-            {
-                return false;
-            }
-            Hashtable hash;
-            Hashtable expected = null;
-            HashSet<string> hashSet;
-            if (room.ExpectedUsers != null)
-            {
-                hashSet = new HashSet<string>(room.ExpectedUsers);
-            }
-            else
-            {
-                hashSet = new HashSet<string>();
-            }
-            hashSet.Add(userId);
-            if (room.MaxPlayers > 0 && hashSet.Count + room.PlayerCount > room.MaxPlayers)
-            {
-                if (room.PlayerCount > 1 && room.Players.Values.Any(player => !player.IsLocal && string.IsNullOrEmpty(player.UserId)))
-                {
-                    return false; // Publish UserId is disabled!
-                }
-                int alreadyTaken = 0;
-                foreach (string user in hashSet)
-                {
-                    if (room.Players.Values.Any(player => user.Equals(player.UserId)))
-                    {
-                        alreadyTaken++;
-                        break;
-                    }
-                }
-                if (alreadyTaken > 0)
-                {
-                    hash = new Hashtable(1);
-                    if (room.ExpectedUsers != null)
-                    {
-                        expected = new Hashtable(1);
-                    }
-                }
-                else if (force)
-                {
-                    hash = new Hashtable(2);
-                    hash.Add(GamePropertyKey.MaxPlayers, room.MaxPlayers + 1);
-                    if (room.ExpectedUsers != null)
-                    {
-                        expected = new Hashtable(2);
-                    }
-                    else
-                    {
-                        expected = new Hashtable(1);
-                    }
-                    expected.Add(GamePropertyKey.MaxPlayers, room.MaxPlayers);
-                }
-                else
-                {
-                    return false;
-                }
-            }
-            else
-            {
-                hash = new Hashtable(1);
-                if (room.ExpectedUsers != null)
-                {
-                    expected = new Hashtable(1);
-                }
-            }
-            hash.Add(GamePropertyKey.ExpectedUsers, hashSet.ToArray());
-            if (expected != null)
-            {
-                expected.Add(GamePropertyKey.ExpectedUsers, room.ExpectedUsers);
-            }
-            return room.LoadBalancingClient.OpSetPropertiesOfRoom(hash, expected);
+            return !string.IsNullOrEmpty(userId) && room.AddExpectedUsers(new[] { userId }, force);
         }
 
         public static bool RemoveExpectedUser(this Room room, string userId)
         {
-            if (string.IsNullOrEmpty(userId))
-            {
-                return false;
-            }
-            if (room.ExpectedUsers == null || room.ExpectedUsers.Length == 0)
-            {
-                return false;
-            }
-            HashSet<string> hashSet = new HashSet<string>(room.ExpectedUsers);
-            if (hashSet.Remove(userId))
-            {
-                Hashtable hash = new Hashtable(1);
-                hash.Add(GamePropertyKey.ExpectedUsers, hashSet.ToArray());
-                Hashtable expected = new Hashtable(1);
-                expected.Add(GamePropertyKey.ExpectedUsers, room.ExpectedUsers);
-                return room.LoadBalancingClient.OpSetPropertiesOfRoom(hash, expected);
-            }
-            return false;
+            return !string.IsNullOrEmpty(userId) && room.RemoveExpectedUsers(new[] { userId });
         }
 
         public static bool AddExpectedUsers(this Room room, string[] userIds, bool force = false)
@@ -139,11 +47,10 @@
                     return false;
                 }
             }
-            Hashtable hash;
-            Hashtable expected = null;
+            int maxPlayers = room.MaxPlayers;
             if (room.MaxPlayers > 0 && hashSet.Count + room.PlayerCount > room.MaxPlayers)
             {
-                if (room.PlayerCount > 1 && room.Players.Values.Any(player => !player.IsLocal && string.IsNullOrEmpty(player.UserId)))
+                if (!room.PublishUserId)
                 {
                     return false; // Publish UserId is disabled!
                 }
@@ -155,47 +62,19 @@
                         alreadyTaken++;
                     }
                 }
-                if (hashSet.Count + room.PlayerCount - alreadyTaken <= room.MaxPlayers)
+                if (hashSet.Count + room.PlayerCount - alreadyTaken > room.MaxPlayers)
                 {
-                    hash = new Hashtable(1);
-                    if (room.ExpectedUsers != null)
+                    if (force)
                     {
-                        expected = new Hashtable(1);
-                    }
-                }
-                else if (force)
-                {
-                    hash = new Hashtable(2);
-                    hash.Add(GamePropertyKey.MaxPlayers, hashSet.Count + room.PlayerCount - alreadyTaken);
-                    if (room.ExpectedUsers != null)
-                    {
-                        expected = new Hashtable(2);
+                        maxPlayers = hashSet.Count + room.PlayerCount - alreadyTaken;
                     }
                     else
                     {
-                        expected = new Hashtable(1);
+                        return false;
                     }
-                    expected.Add(GamePropertyKey.MaxPlayers, room.MaxPlayers);
-                }
-                else
-                {
-                    return false;
                 }
             }
-            else
-            {
-                hash = new Hashtable(1);
-                if (room.ExpectedUsers != null)
-                {
-                    expected = new Hashtable(1);
-                }
-            }
-            hash.Add(GamePropertyKey.ExpectedUsers, hashSet.ToArray());
-            if (expected != null)
-            {
-                expected.Add(GamePropertyKey.ExpectedUsers, room.ExpectedUsers);
-            }
-            return room.LoadBalancingClient.OpSetPropertiesOfRoom(hash, expected);
+            return room.SetExpectedUsers(hashSet, maxPlayers);
         }
 
         public static bool RemoveExpectedUsers(this Room room, string[] userIds)
@@ -212,6 +91,7 @@
             {
                 return false;
             }
+            HashSet<string> hashSet = new HashSet<string>(room.ExpectedUsers);
             for (int i = 0; i < userIds.Length; i++)
             {
                 string userId = userIds[i];
@@ -219,17 +99,12 @@
                 {
                     return false;
                 }
-                if (Array.IndexOf(room.ExpectedUsers, userId) == -1)
+                if (!hashSet.Remove(userId))
                 {
                     return false;
                 }
             }
-            HashSet<string> hashSet = new HashSet<string>(room.ExpectedUsers);
-            Hashtable hash = new Hashtable(1);
-            hash.Add(GamePropertyKey.ExpectedUsers, hashSet.ToArray());
-            Hashtable expected = new Hashtable(1);
-            expected.Add(GamePropertyKey.ExpectedUsers, room.ExpectedUsers);
-            return room.LoadBalancingClient.OpSetPropertiesOfRoom(hash, expected);
+            return room.SetExpectedUsers(hashSet);
         }
 
         public static bool ChangeExpectedUsers(this Room room, string[] toRemove, string[] toAdd, bool force = false)
@@ -286,8 +161,7 @@
                     return false;
                 }
             }
-            Hashtable hash;
-            Hashtable expected = null;
+            int maxPlayers = room.MaxPlayers;
             if (room.MaxPlayers > 0 && hashSet.Count + room.PlayerCount > room.MaxPlayers)
             {
                 if (room.PlayerCount > 1 && room.Players.Values.Any(player => !player.IsLocal && string.IsNullOrEmpty(player.UserId)))
@@ -302,47 +176,19 @@
                         alreadyTaken++;
                     }
                 }
-                if (hashSet.Count + room.PlayerCount - alreadyTaken <= room.MaxPlayers)
+                if (hashSet.Count + room.PlayerCount - alreadyTaken > room.MaxPlayers)
                 {
-                    hash = new Hashtable(1);
-                    if (room.ExpectedUsers != null)
+                    if (force)
                     {
-                        expected = new Hashtable(1);
-                    }
-                }
-                else if (force)
-                {
-                    hash = new Hashtable(2);
-                    hash.Add(GamePropertyKey.MaxPlayers, hashSet.Count + room.PlayerCount - alreadyTaken);
-                    if (room.ExpectedUsers != null)
-                    {
-                        expected = new Hashtable(2);
+                        maxPlayers = hashSet.Count + room.PlayerCount - alreadyTaken;
                     }
                     else
                     {
-                        expected = new Hashtable(1);
+                        return false;
                     }
-                    expected.Add(GamePropertyKey.MaxPlayers, room.MaxPlayers);
-                }
-                else
-                {
-                    return false;
                 }
             }
-            else
-            {
-                hash = new Hashtable(1);
-                if (room.ExpectedUsers != null)
-                {
-                    expected = new Hashtable(1);
-                }
-            }
-            hash.Add(GamePropertyKey.ExpectedUsers, hashSet.ToArray());
-            if (expected != null)
-            {
-                expected.Add(GamePropertyKey.ExpectedUsers, room.ExpectedUsers);
-            }
-            return room.LoadBalancingClient.OpSetPropertiesOfRoom(hash, expected);
+            return room.SetExpectedUsers(hashSet, maxPlayers);
         }
 
         public static bool ReplaceExpectedUser(this Room room, string toRemove, string toAdd)
@@ -364,11 +210,48 @@
             {
                 return false;
             }
-            Hashtable hash = new Hashtable(1);
-            Hashtable expected = new Hashtable(1);
-            hash.Add(GamePropertyKey.ExpectedUsers, hashSet.ToArray());
-            expected.Add(GamePropertyKey.ExpectedUsers, room.ExpectedUsers);
-            return room.LoadBalancingClient.OpSetPropertiesOfRoom(hash, expected);
+            return room.SetExpectedUsers(hashSet);
+        }
+
+        public static bool SetExpectedUsers(this Room room, HashSet<string> newExpectedUsers, int? newMaxPlayers = null)
+        {
+            // use what we already have built-in in SDK
+            if (!newMaxPlayers.HasValue || newMaxPlayers == 0 || newMaxPlayers == room.MaxPlayers)
+            {
+                if (newExpectedUsers != null)
+                {
+                    if (newExpectedUsers.Count == 0)
+                    {
+                        return room.ClearExpectedUsers();
+                    }
+                    return room.SetExpectedUsers(newExpectedUsers.ToArray());
+                }
+            }
+            // re implement the hidden wheel :)
+            Hashtable hash = new Hashtable();
+            Hashtable expected = new Hashtable();
+            if (newMaxPlayers.HasValue)
+            {
+                hash.Add(GamePropertyKey.MaxPlayers, newMaxPlayers);
+                expected.Add(GamePropertyKey.MaxPlayers, room.MaxPlayers);
+            }
+            if (newExpectedUsers == null)
+            {
+                hash.Add(GamePropertyKey.ExpectedUsers, null);
+            }
+            else
+            {
+                hash.Add(GamePropertyKey.ExpectedUsers, newExpectedUsers.ToArray());
+            }
+            if (room.ExpectedUsers != null)
+            {
+                expected.Add(GamePropertyKey.ExpectedUsers, room.ExpectedUsers);
+            }
+            ParameterDictionary opParameters = new ParameterDictionary(3);
+            opParameters.Add(ParameterCode.Properties, hash);
+            opParameters.Add(ParameterCode.ExpectedValues, expected);
+            opParameters.Add(ParameterCode.Broadcast, true);
+            return room.LoadBalancingClient.LoadBalancingPeer.SendOperation(OperationCode.SetProperties, opParameters, SendOptions.SendReliable);
         }
 
         #endregion
