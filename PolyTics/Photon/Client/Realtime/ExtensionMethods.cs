@@ -215,19 +215,6 @@
 
         public static bool SetExpectedUsers(this Room room, HashSet<string> newExpectedUsers, int? newMaxPlayers = null)
         {
-            // use what we already have built-in in SDK
-            if (!newMaxPlayers.HasValue || newMaxPlayers == 0 || newMaxPlayers == room.MaxPlayers)
-            {
-                if (newExpectedUsers != null)
-                {
-                    if (newExpectedUsers.Count == 0)
-                    {
-                        return room.ClearExpectedUsers();
-                    }
-                    return room.SetExpectedUsers(newExpectedUsers.ToArray());
-                }
-            }
-            // re implement the hidden wheel :)
             Hashtable hash = new Hashtable();
             Hashtable expected = new Hashtable();
             if (newMaxPlayers.HasValue)
