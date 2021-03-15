@@ -2,141 +2,118 @@
 
 namespace PolyTics.Photon.Client.Realtime
 {
-    using ExitGames.Client.Photon;
-
     public class RoomPropertiesRequest : SetPropertiesRequest
     {
-        public bool? IsOpen;
-        public bool? IsVisible;
-        //public bool? CleanUpCacheOnLeave;
-        public int? PlayerTtl;
-        public int? EmptyRoomTtl;
-        public int? MaxPlayers;
-        
-        private int? currentMasterClientId;
-        private int? masterClientId; // only w/ CAS
-
-        private bool expectedUsersSet;
-        private string[] expectedUsers;
-
+        public bool? IsOpen
+        {
+            get
+            {
+                if (this.TryGetProperty(GamePropertyKey.IsOpen, out bool temp))
+                {
+                    return temp;
+                }
+                return null;
+            }
+            set => this.SetProperty(GamePropertyKey.IsOpen, value);
+        }
+        public bool? IsVisible
+        {
+            get
+            {
+                if (this.TryGetProperty(GamePropertyKey.IsVisible, out bool temp))
+                {
+                    return temp;
+                }
+                return null;
+            }
+            set => this.SetProperty(GamePropertyKey.IsVisible, value);
+        }
+        public int? PlayerTtl
+        {
+            get
+            {
+                if (this.TryGetProperty(GamePropertyKey.PlayerTtl, out int temp))
+                {
+                    return temp;
+                }
+                return null;
+            }
+            set => this.SetProperty(GamePropertyKey.PlayerTtl, value);
+        }
+        public int? EmptyRoomTtl
+        {
+            get
+            {
+                if (this.TryGetProperty(GamePropertyKey.EmptyRoomTtl, out int temp))
+                {
+                    return temp;
+                }
+                return null;
+            }
+            set => this.SetProperty(GamePropertyKey.EmptyRoomTtl, value);
+        }
+        public int? MaxPlayers
+        {
+            get
+            {
+                if (this.TryGetProperty(GamePropertyKey.MaxPlayers, out int temp))
+                {
+                    return temp;
+                }
+                return null;
+            }
+            set => this.SetProperty(GamePropertyKey.MaxPlayers, value);
+        }
+        public int? NewMasterClientActorNumber
+        {
+            get
+            {
+                if (this.TryGetProperty(GamePropertyKey.MasterClientId, out int temp))
+                {
+                    return temp;
+                }
+                return null;
+            }
+        }
         public string[] ExpectedUsers
         {
-            get => this.expectedUsers;
-            set
-            {
-                this.expectedUsersSet = true;
-                this.expectedUsers = value;
-            }
+            set => this.SetProperty(GamePropertyKey.ExpectedUsers, value);
         }
-
-        private bool propsListedInLobbySet;
-        private string[] propsListedInLobby;
-
-        public string[] PropsListedInLobby
+        public string[] MatchmakingPropertiesKeys
         {
-            get => this.propsListedInLobby;
-            set
-            {
-                this.propsListedInLobbySet = true;
-                this.propsListedInLobby = value;
-            }
+            set => this.SetProperty(GamePropertyKey.PropsListedInLobby, value);
         }
-
-        protected override Hashtable SetExpectedProperties(Hashtable hash)
-        {
-            if (this.expectedProperties != null &&
-                this.expectedProperties.TryGetValue(GamePropertyKey.MasterClientId, out object temp))
-            {
-                this.currentMasterClientId = (int)temp;
-            }
-
-            this.expectedProperties = hash;
-            if (!this.expectedProperties.ContainsKey(GamePropertyKey.MasterClientId) && this.currentMasterClientId.HasValue)
-            {
-                this.expectedProperties[GamePropertyKey.MasterClientId] = this.currentMasterClientId.Value;
-            }
-
-            return this.expectedProperties;
-        }
-
-        protected override Hashtable GetExpectedProperties()
-        {
-            if (this.masterClientId.HasValue)
-            {
-                if (this.currentMasterClientId.HasValue)
-                {
-                    this.SetExpectedProperty(GamePropertyKey.MasterClientId, this.currentMasterClientId.Value);
-                }
-            }
-            return this.expectedProperties;
-        }
-
         public bool SetMasterClient(int newMasterClient, int currentMasterClient)
         {
             if (newMasterClient != currentMasterClient)
             {
                 return false;
             }
-            this.masterClientId = newMasterClient;
+            this.SetProperty(GamePropertyKey.MasterClientId, newMasterClient);
             this.SetExpectedProperty(GamePropertyKey.MasterClientId, currentMasterClient);
             return true;
         }
-
-        protected override void AddToHashtable(Hashtable hash)
+        public bool TryGetExpectedUsers(out string[] expectedUsers)
         {
-            if (hash == null)
+            if (this.TryGetProperty(GamePropertyKey.ExpectedUsers, out expectedUsers))
             {
-                return;
+                return true;
             }
-
-            if (this.IsOpen.HasValue)
-            {
-                hash[GamePropertyKey.IsOpen] = this.IsOpen.Value;
-            }
-
-            if (this.IsVisible.HasValue)
-            {
-                hash[GamePropertyKey.IsVisible] = this.IsVisible.Value;
-            }
-
-            //if (CleanUpCacheOnLeave.HasValue)
-            //{
-            //    hash[GamePropertyKey.CleanupCacheOnLeave] = CleanUpCacheOnLeave.Value;
-            //}
-            if (this.PlayerTtl.HasValue)
-            {
-                hash[GamePropertyKey.PlayerTtl] = this.PlayerTtl.Value;
-            }
-
-            if (this.EmptyRoomTtl.HasValue)
-            {
-                hash[GamePropertyKey.EmptyRoomTtl] = this.EmptyRoomTtl.Value;
-            }
-
-            if (this.MaxPlayers.HasValue)
-            {
-                hash[GamePropertyKey.MaxPlayers] = this.MaxPlayers.Value;
-            }
-
-            if (this.masterClientId.HasValue)
-            {
-                hash[GamePropertyKey.MasterClientId] = this.masterClientId.Value;
-            }
-
-            if (this.expectedUsersSet)
-            {
-                hash[GamePropertyKey.ExpectedUsers] = this.ExpectedUsers;
-            }
-
-            if (this.propsListedInLobbySet)
-            {
-                hash[GamePropertyKey.PropsListedInLobby] = this.PropsListedInLobby;
-            }
+            expectedUsers = null;
+            return false;
         }
-
+        public bool TryGetMatchmakingPropertiesKeys(out string[] matchmakingPropertiesKeys)
+        {
+            if (this.TryGetProperty(GamePropertyKey.ExpectedUsers, out matchmakingPropertiesKeys))
+            {
+                return true;
+            }
+            matchmakingPropertiesKeys = null;
+            return false;
+        }
         public override string ToString()
         {
-            return this.ToHashtable().PrintParams(typeof(GamePropertyKey)); // todo: optimize
+            return string.Format("RoomPropertiesRequest PropertiesSent:{0} ExpectedPropertiesSent:{1}", this.properties.PrintParams(typeof(GamePropertyKey)), this.expectedProperties.PrintParams(typeof(GamePropertyKey)));
         }
     }
 }

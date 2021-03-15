@@ -2,78 +2,89 @@
 
 namespace PolyTics.Photon.Client.Realtime
 {
+    using System;
     using ExitGames.Client.Photon;
 
     public abstract class SetPropertiesRequest
     {
         public WebFlags WebFlags;
         public bool SendPropertiesChangedEvent = true;
-        public SendOptions SendOptions = SendOptions.SendReliable;
+        public SendOptions SendOptions = new SendOptions { Reliability = true };
+        public bool HasExpectedProperties => this.expectedProperties == null || this.expectedProperties.Count == 0;
+
         protected Hashtable expectedProperties;
+        protected Hashtable properties;
 
-        public Hashtable ExpectedProperties
+        internal Hashtable Properties => this.properties;
+        internal Hashtable ExpectedProperties => this.expectedProperties;
+
+        public void SetExpectedProperty<TK, TV>(TK propKey, TV propValue)
         {
-            get { return this.GetExpectedProperties(); }
-            set { this.expectedProperties = this.SetExpectedProperties(value); }
-        }
-
-        public Hashtable CustomProperties;
-
-        public void SetCustomProperty(object propKey, object propValue)
-        {
-            if (this.CustomProperties == null)
+            if (this.expectedProperties == null)
             {
-                this.CustomProperties = new Hashtable();
+                this.expectedProperties = new Hashtable();
             }
-
             if (propKey == null)
             {
                 return;
             }
-
-            this.CustomProperties[propKey] = propValue;
+            this.expectedProperties[propKey] = propValue;
         }
 
-        public void SetExpectedProperty(object propKey, object propValue)
+        public void SetCustomProperties(Hashtable hashtable)
         {
-            if (this.ExpectedProperties == null)
+            if (hashtable != null)
             {
-                this.ExpectedProperties = new Hashtable();
+                if (this.properties == null)
+                {
+                    this.properties = new Hashtable();
+                }
+                foreach (var pair in hashtable)
+                {
+                    this.properties[pair.Key] = pair.Value;
+                }
             }
+        }
 
-            if (propKey == null)
+        public void SetExpectedProperties(Hashtable hashtable)
+        {
+            if (hashtable != null)
             {
-                return;
+                if (this.expectedProperties == null)
+                {
+                    this.expectedProperties = new Hashtable();
+                }
+                foreach (var pair in hashtable)
+                {
+                    this.expectedProperties[pair.Key] = pair.Value;
+                }
             }
-
-            this.ExpectedProperties[propKey] = propValue;
         }
 
-        public Hashtable ToHashtable()
+        public bool TryGetProperty<TK, TV>(TK propertyKey, out TV propertyValue)
         {
-            Hashtable hash = this.CustomProperties;
-            if (hash == null)
+            if (this.properties != null && this.properties.TryGetValue(propertyKey, out object temp))
             {
-                hash = new Hashtable();
+                propertyValue = (TV) temp;
+                return true;
             }
-
-            this.AddToHashtable(hash);
-            return hash;
+            propertyValue = default;
+            return false;
         }
 
-        protected virtual void AddToHashtable(Hashtable hash)
+        public void SetProperty<TV>(byte propertyKey, TV propertyValue)
         {
-
+            if (this.properties == null)
+            {
+                this.properties = new Hashtable();
+            }
+            this.properties[propertyKey] = propertyValue;
         }
 
-        protected virtual Hashtable SetExpectedProperties(Hashtable hash)
-        {
-            return hash;
-        }
-
-        protected virtual Hashtable GetExpectedProperties()
-        {
-            return this.expectedProperties;
-        }
+        //public void Clear()
+        //{
+        //    this.properties?.Clear();
+        //    this.expectedProperties?.Clear();
+        //}
     }
 }

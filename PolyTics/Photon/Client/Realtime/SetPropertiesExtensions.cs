@@ -40,7 +40,7 @@ namespace PolyTics.Photon.Client.Realtime
             {
                 return false;
             }
-            return client.OpSetProperties(0, roomProperties.ToHashtable(), 
+            return client.OpSetProperties(0, roomProperties.Properties, 
                 roomProperties.ExpectedProperties, roomProperties.WebFlags, roomProperties.SendPropertiesChangedEvent, roomProperties.SendOptions);
         }
 
@@ -54,7 +54,7 @@ namespace PolyTics.Photon.Client.Realtime
             {
                 return false;
             }
-            return client.OpSetProperties(actorProperties.TargetActorNumber, actorProperties.ToHashtable(), 
+            return client.OpSetProperties(actorProperties.TargetActorNumber, actorProperties.Properties, 
                 actorProperties.ExpectedProperties, actorProperties.WebFlags, actorProperties.SendPropertiesChangedEvent, actorProperties.SendOptions);
         }
     }

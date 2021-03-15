@@ -1,5 +1,4 @@
-﻿using Photon.Pun;
-using Photon.Realtime;
+﻿using Photon.Realtime;
 
 namespace PolyTics.Photon.Client.Realtime
 {
@@ -56,7 +55,7 @@ namespace PolyTics.Photon.Client.Realtime
             }
             if (currentState == ClientState.Disconnected && this.clearOnDisconnect)
             {
-                this.Clear(string.Format("Client disconnected, cause: {0}.", PhotonNetwork.NetworkingClient.DisconnectedCause));
+                this.Clear(string.Format("Client disconnected, cause: {0}.", this.loadBalancingClient.DisconnectedCause));
             }
             if (currentState == ClientState.Joined)
             {
@@ -125,7 +124,7 @@ namespace PolyTics.Photon.Client.Realtime
         private void OnEventReceived(EventData photonEvent)
         {
             if (photonEvent.Code == EventCode.PropertiesChanged &&
-                photonEvent.Sender == PhotonNetwork.LocalPlayer.ActorNumber)
+                photonEvent.Sender == this.loadBalancingClient.LocalPlayer.ActorNumber)
             {
                 this.OnSuccess();
             }
@@ -177,8 +176,9 @@ namespace PolyTics.Photon.Client.Realtime
             {
                 if (opResponse.ReturnCode == ErrorCode.Ok)
                 {
-                    if (!PhotonNetwork.CurrentRoom.BroadcastPropertiesChangeToAll ||
-                        !this.setPropertiesQueue.Peek().Request.SendPropertiesChangedEvent)
+                    SetPropertiesRequest request = this.setPropertiesQueue.Peek().Request;
+                    if (!this.loadBalancingClient.CurrentRoom.BroadcastPropertiesChangeToAll && request.HasExpectedProperties ||
+                        !request.SendPropertiesChangedEvent)
                     {
                         this.OnSuccess();
                     }

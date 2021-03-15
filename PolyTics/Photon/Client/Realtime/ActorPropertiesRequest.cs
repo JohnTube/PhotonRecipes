@@ -2,40 +2,28 @@
 
 namespace PolyTics.Photon.Client.Realtime
 {
-    using ExitGames.Client.Photon;
+    using System;
 
     public class ActorPropertiesRequest : SetPropertiesRequest
     {
         public int TargetActorNumber;
 
-        private string nickname;
-        private bool nicknameSet;
-
         public string Nickname
         {
-            get { return this.nickname; }
-            set
+            get
             {
-                this.nickname = value;
-                this.nicknameSet = true;
+                if (this.TryGetProperty(ActorProperties.PlayerName, out string temp))
+                {
+                    return temp;
+                }
+                return null;
             }
-        }
-
-        protected override void AddToHashtable(Hashtable hash)
-        {
-            if (hash == null)
-            {
-                return;
-            }
-            if (this.nicknameSet)
-            {
-                hash[ActorProperties.PlayerName] = this.nickname;
-            }
+            set => this.SetProperty(ActorProperties.PlayerName, value);
         }
 
         public override string ToString()
         {
-            return this.ToHashtable().PrintParams(typeof(ActorProperties)); // todo: optimize
+            return string.Format("ActorPropertiesRequest TargetActorNumber:{0} PropertiesSent:{1} ExpectedPropertiesSent:{2}", this.TargetActorNumber, this.properties.PrintParams(typeof(GamePropertyKey)), this.expectedProperties.PrintParams(typeof(GamePropertyKey)));
         }
     }
 }
