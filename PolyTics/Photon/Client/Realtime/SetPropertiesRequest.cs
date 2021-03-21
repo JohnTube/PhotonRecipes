@@ -2,14 +2,25 @@
 
 namespace PolyTics.Photon.Client.Realtime
 {
-    using System;
     using ExitGames.Client.Photon;
 
     public abstract class SetPropertiesRequest
     {
+        /// <summary>
+        /// Flags to define PathGameProperties WebHook behaviour.
+        /// </summary>
         public WebFlags WebFlags;
+        /// <summary>
+        /// Whether or not this operation should result in PropertiesChanged event sent to joined actors to sync their cached properties.
+        /// </summary>
         public bool SendPropertiesChangedEvent = true;
+        /// <summary>
+        /// Generic options affecting the operation request.
+        /// </summary>
         public SendOptions SendOptions = new SendOptions { Reliability = true };
+        /// <summary>
+        /// Returns whether or not this request includes Expected Properties.
+        /// </summary>
         public bool HasExpectedProperties => this.expectedProperties == null || this.expectedProperties.Count == 0;
 
         protected Hashtable expectedProperties;
@@ -17,7 +28,13 @@ namespace PolyTics.Photon.Client.Realtime
 
         internal Hashtable Properties => this.properties;
         internal Hashtable ExpectedProperties => this.expectedProperties;
-
+        /// <summary>
+        /// Adds a new key/value pair of expected properties or updates value of existing one. 
+        /// </summary>
+        /// <typeparam name="TK">Type of expected property key.</typeparam>
+        /// <typeparam name="TV">Type of expected property value.</typeparam>
+        /// <param name="propKey">Expected property key.</param>
+        /// <param name="propValue">Expected property value.</param>
         public void SetExpectedProperty<TK, TV>(TK propKey, TV propValue)
         {
             if (this.expectedProperties == null)
@@ -30,8 +47,11 @@ namespace PolyTics.Photon.Client.Realtime
             }
             this.expectedProperties[propKey] = propValue;
         }
-
-        public void SetCustomProperties(Hashtable hashtable)
+        /// <summary>
+        /// Adds key/value pairs of properties or updates values of exiting ones.
+        /// </summary>
+        /// <param name="hashtable">Properties to set.</param>
+        public void SetProperties(Hashtable hashtable)
         {
             if (hashtable != null)
             {
@@ -45,7 +65,10 @@ namespace PolyTics.Photon.Client.Realtime
                 }
             }
         }
-
+        /// <summary>
+        /// Adds key/value pairs of expected properties or updates values of exiting ones.
+        /// </summary>
+        /// <param name="hashtable">Expected Properties to set.</param>
         public void SetExpectedProperties(Hashtable hashtable)
         {
             if (hashtable != null)
@@ -60,7 +83,14 @@ namespace PolyTics.Photon.Client.Realtime
                 }
             }
         }
-
+        /// <summary>
+        /// Try to get the property value if it exists in this request.
+        /// </summary>
+        /// <typeparam name="TK">Type of property key.</typeparam>
+        /// <typeparam name="TV">Type of property value.</typeparam>
+        /// <param name="propertyKey">Property key.</param>
+        /// <param name="propertyValue">Property value.</param>
+        /// <returns>If the property exists.</returns>
         public bool TryGetProperty<TK, TV>(TK propertyKey, out TV propertyValue)
         {
             if (this.properties != null && this.properties.TryGetValue(propertyKey, out object temp))
@@ -71,8 +101,32 @@ namespace PolyTics.Photon.Client.Realtime
             propertyValue = default;
             return false;
         }
-
-        public void SetProperty<TV>(byte propertyKey, TV propertyValue)
+        /// <summary>
+        /// Try to get the expected property value if it exists in this request.
+        /// </summary>
+        /// <typeparam name="TK">Type of expected property key.</typeparam>
+        /// <typeparam name="TV">Type of expected property value.</typeparam>
+        /// <param name="propertyKey">Expected property key.</param>
+        /// <param name="propertyValue">Expected property value.</param>
+        /// <returns>If the property exists.</returns>
+        public bool TryGetExpectedProperty<TK, TV>(TK propertyKey, out TV propertyValue)
+        {
+            if (this.expectedProperties != null && this.expectedProperties.TryGetValue(propertyKey, out object temp))
+            {
+                propertyValue = (TV) temp;
+                return true;
+            }
+            propertyValue = default;
+            return false;
+        }
+        /// <summary>
+        /// Adds a new key/value pair of properties or updates value of existing one. 
+        /// </summary>
+        /// <typeparam name="TK">Type of property key.</typeparam>
+        /// <typeparam name="TV">Type of property value.</typeparam>
+        /// <param name="propertyKey">Property key.</param>
+        /// <param name="propertyValue">Property value.</param>
+        public void SetProperty<TK, TV>(TK propertyKey, TV propertyValue)
         {
             if (this.properties == null)
             {
@@ -80,11 +134,5 @@ namespace PolyTics.Photon.Client.Realtime
             }
             this.properties[propertyKey] = propertyValue;
         }
-
-        //public void Clear()
-        //{
-        //    this.properties?.Clear();
-        //    this.expectedProperties?.Clear();
-        //}
     }
 }

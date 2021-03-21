@@ -7,6 +7,19 @@ namespace PolyTics.Photon.Client.Realtime
 
     public static partial class ExtensionMethods
     {
+        /// <summary>
+        /// Tries to send SetProperties operation.
+        /// If actorNr param is 0 then it's for room properties.
+        /// If actorNr param is higher than 0 then it's for actor properties.
+        /// </summary>
+        /// <param name="client">LoadBalancingClient instance to send the operation request.</param>
+        /// <param name="actorNr">Target actor number of the properties to set. 0 for room properties.</param>
+        /// <param name="properties">Properties to set.</param>
+        /// <param name="expectedProperties">Properties used in Check-And-Swap or Compare-And-Set</param>
+        /// <param name="webFlags">Flags to define PathGameProperties WebHook behaviour.</param>
+        /// <param name="notify">Whether or not this operation should result in PropertiesChanged event sent to joined actors to sync their cached properties.</param>
+        /// <param name="sendOptions">Generic options affecting the operation request.</param>
+        /// <returns></returns>
         public static bool OpSetProperties(this LoadBalancingClient client, int actorNr, Hashtable properties, Hashtable expectedProperties = null, WebFlags webFlags = null, bool notify = true, 
             SendOptions sendOptions = default)
         {
@@ -34,6 +47,12 @@ namespace PolyTics.Photon.Client.Realtime
             return client.LoadBalancingPeer.SendOperation(OperationCode.SetProperties, opParameters, sendOptions);
         }
 
+        /// <summary>
+        /// Tries to send SetProperties request to set room properties.
+        /// </summary>
+        /// <param name="client">LoadBalancingClient instance to send the operation request.</param>
+        /// <param name="roomProperties">Request declaration.</param>
+        /// <returns></returns>
         public static bool OpSetPropertiesOfRoom(this LoadBalancingClient client, RoomPropertiesRequest roomProperties)
         {
             if (roomProperties == null)
@@ -44,6 +63,12 @@ namespace PolyTics.Photon.Client.Realtime
                 roomProperties.ExpectedProperties, roomProperties.WebFlags, roomProperties.SendPropertiesChangedEvent, roomProperties.SendOptions);
         }
 
+        /// <summary>
+        /// Tries to send SetProperties request to set actor properties.
+        /// </summary>
+        /// <param name="client">LoadBalancingClient instance to send the operation request.</param>
+        /// <param name="actorProperties">Request declaration.</param>
+        /// <returns></returns>
         public static bool OpSetPropertiesOfActor(this LoadBalancingClient client, ActorPropertiesRequest actorProperties)
         {
             if (actorProperties == null)

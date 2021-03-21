@@ -2,8 +2,14 @@
 
 namespace PolyTics.Photon.Client.Realtime
 {
+    /// <summary>
+    /// A class that holds parameters of an outgoing SetProperties request that tries to set room properties.
+    /// </summary>
     public class RoomPropertiesRequest : SetPropertiesRequest
     {
+        /// <summary>
+        /// Optional Well Known Room Property to set: IsOpen.
+        /// </summary>
         public bool? IsOpen
         {
             get
@@ -16,6 +22,9 @@ namespace PolyTics.Photon.Client.Realtime
             }
             set => this.SetProperty(GamePropertyKey.IsOpen, value);
         }
+        /// <summary>
+        /// Optional Well Known Room Property to set: IsVisible.
+        /// </summary>
         public bool? IsVisible
         {
             get
@@ -28,6 +37,9 @@ namespace PolyTics.Photon.Client.Realtime
             }
             set => this.SetProperty(GamePropertyKey.IsVisible, value);
         }
+        /// <summary>
+        /// Optional Well Known Room Property to set: PlayerTTL. In Milliseconds, negative or int.MaxValue means infinite.
+        /// </summary>
         public int? PlayerTtl
         {
             get
@@ -40,6 +52,9 @@ namespace PolyTics.Photon.Client.Realtime
             }
             set => this.SetProperty(GamePropertyKey.PlayerTtl, value);
         }
+        /// <summary>
+        /// Optional Well Known Room Property to set: EmptyRoomTTL. In Milliseconds, max on public cloud is 300000.
+        /// </summary>
         public int? EmptyRoomTtl
         {
             get
@@ -52,11 +67,14 @@ namespace PolyTics.Photon.Client.Realtime
             }
             set => this.SetProperty(GamePropertyKey.EmptyRoomTtl, value);
         }
-        public int? MaxPlayers
+        /// <summary>
+        /// Optional Well Known Room Property to set: MaxPlayers. 0 (default) means infinite.
+        /// </summary>
+        public byte? MaxPlayers
         {
             get
             {
-                if (this.TryGetProperty(GamePropertyKey.MaxPlayers, out int temp))
+                if (this.TryGetProperty(GamePropertyKey.MaxPlayers, out byte temp))
                 {
                     return temp;
                 }
@@ -64,6 +82,9 @@ namespace PolyTics.Photon.Client.Realtime
             }
             set => this.SetProperty(GamePropertyKey.MaxPlayers, value);
         }
+        /// <summary>
+        /// Optional Well Known Room Property to set: Master Client Actor Number. If you want to switch you need to use CAS and know the current value.
+        /// </summary>
         public int? NewMasterClientActorNumber
         {
             get
@@ -75,14 +96,26 @@ namespace PolyTics.Photon.Client.Realtime
                 return null;
             }
         }
+        /// <summary>
+        /// Optional Well Known Room Property to set: Expected Users' UserIDs strings. Used for private slot reservation in matchmaking.
+        /// </summary>
         public string[] ExpectedUsers
         {
             set => this.SetProperty(GamePropertyKey.ExpectedUsers, value);
         }
+        /// <summary>
+        /// Optional Well Known Room Property to set: Properties Keys visible to the lobby or listed in the lobby. The properties that could be used as filters in random matchmaking.
+        /// </summary>
         public string[] MatchmakingPropertiesKeys
         {
             set => this.SetProperty(GamePropertyKey.PropsListedInLobby, value);
         }
+        /// <summary>
+        /// Sets the new master client actor number and current one as this requires CAS.
+        /// </summary>
+        /// <param name="newMasterClient">New value for the master client's actor number.</param>
+        /// <param name="currentMasterClient">Current value for the master client's actor number.</param>
+        /// <returns></returns>
         public bool SetMasterClient(int newMasterClient, int currentMasterClient)
         {
             if (newMasterClient != currentMasterClient)
@@ -93,6 +126,11 @@ namespace PolyTics.Photon.Client.Realtime
             this.SetExpectedProperty(GamePropertyKey.MasterClientId, currentMasterClient);
             return true;
         }
+        /// <summary>
+        /// Try to get the value of the expected users' UserIDs string array if exists in this request.
+        /// </summary>
+        /// <param name="expectedUsers">Expected Users array to get.</param>
+        /// <returns>If this request contains expected users.</returns>
         public bool TryGetExpectedUsers(out string[] expectedUsers)
         {
             if (this.TryGetProperty(GamePropertyKey.ExpectedUsers, out expectedUsers))
@@ -102,6 +140,11 @@ namespace PolyTics.Photon.Client.Realtime
             expectedUsers = null;
             return false;
         }
+        /// <summary>
+        /// Try to get the value of properties keys visible in the lobby if exists in this request.
+        /// </summary>
+        /// <param name="matchmakingPropertiesKeys">Matchmaking properties keys to get.</param>
+        /// <returns>If this request contains matchmaking properties keys.</returns>
         public bool TryGetMatchmakingPropertiesKeys(out string[] matchmakingPropertiesKeys)
         {
             if (this.TryGetProperty(GamePropertyKey.ExpectedUsers, out matchmakingPropertiesKeys))
@@ -113,7 +156,8 @@ namespace PolyTics.Photon.Client.Realtime
         }
         public override string ToString()
         {
-            return string.Format("RoomPropertiesRequest PropertiesSent:{0} ExpectedPropertiesSent:{1}", this.properties.PrintParams(typeof(GamePropertyKey)), this.expectedProperties.PrintParams(typeof(GamePropertyKey)));
+            return
+                $"RoomPropertiesRequest Properties:{this.properties.PrintParams(typeof(GamePropertyKey))} ExpectedProperties:{this.expectedProperties.PrintParams(typeof(GamePropertyKey))}";
         }
     }
 }

@@ -6,6 +6,9 @@ namespace PolyTics.Photon.Client.Realtime
     using System.Collections.Generic;
     using ExitGames.Client.Photon;
 
+    /// <summary>
+    /// A class that manages a queue of SetProperties requests and sends one by one.
+    /// </summary>
     public class PropertiesSetter : IDisposable
     {
         private bool pending;
@@ -16,9 +19,18 @@ namespace PolyTics.Photon.Client.Realtime
         private readonly bool queueUntilJoined;
         private readonly int maxFailure;
         private int failureCount;
-
+        /// <summary>
+        /// Is this class disposed.
+        /// </summary>
         public bool Disposed { get; private set; }
-
+        /// <summary>
+        /// Constructor.
+        /// </summary>
+        /// <param name="client">LoadBalancingClient instance that will be used to send the requests.</param>
+        /// <param name="clearOnLeave">Whether to clear queue of requests when client leaves the room explicitly without disconnecting.</param>
+        /// <param name="clearOnDisconnect">Whether to clear queue of requests when client disconnects.</param>
+        /// <param name="queueUntilJoined">Whether attempts to set properties while client is not joined to the room should be queued until a room is joined.</param>
+        /// <param name="maxFailure">Maximum limit of failed requests before clearing the queue. 0 is default and means infinite.</param>
         public PropertiesSetter(LoadBalancingClient client, bool clearOnLeave, bool clearOnDisconnect, bool queueUntilJoined, int maxFailure)
         {
             this.loadBalancingClient = client;
@@ -55,7 +67,7 @@ namespace PolyTics.Photon.Client.Realtime
             }
             if (currentState == ClientState.Disconnected && this.clearOnDisconnect)
             {
-                this.Clear(string.Format("Client disconnected, cause: {0}.", this.loadBalancingClient.DisconnectedCause));
+                this.Clear($"Client disconnected, cause: {this.loadBalancingClient.DisconnectedCause}.");
             }
             if (currentState == ClientState.Joined)
             {
@@ -129,7 +141,14 @@ namespace PolyTics.Photon.Client.Realtime
                 this.OnSuccess();
             }
         }
-
+        /// <summary>
+        /// Tries to set room properties.
+        /// </summary>
+        /// <param name="request">The set properties request.</param>
+        /// <param name="success">Success callback.</param>
+        /// <param name="failure">Error callback.</param>
+        /// <param name="retries">Max number of attempts.</param>
+        /// <returns>If this request call could be queued.</returns>
         public bool SetRoomProperties(RoomPropertiesRequest request, Action<RoomPropertiesRequest> success,
             Action<RoomPropertiesRequest, string> failure, int retries = 0)
         {
@@ -149,7 +168,14 @@ namespace PolyTics.Photon.Client.Realtime
             this.Set();
             return true;
         }
-
+        /// <summary>
+        /// Tries to set actor properties.
+        /// </summary>
+        /// <param name="request">The set properties request.</param>
+        /// <param name="success">Success callback.</param>
+        /// <param name="failure">Error callback.</param>
+        /// <param name="retries">Max number of attempts.</param>
+        /// <returns>If this request call could be queued.</returns>
         public bool SetActorProperties(ActorPropertiesRequest request, Action<ActorPropertiesRequest> success,
             Action<ActorPropertiesRequest, string> failure, int retries = 0)
         {
@@ -238,7 +264,7 @@ namespace PolyTics.Photon.Client.Realtime
                 this.failureCount++;
                 if (this.failureCount == this.maxFailure)
                 {
-                    this.Clear(string.Format("Max failures {0} reached.", this.failureCount));
+                    this.Clear($"Max failures {this.failureCount} reached.");
                     return;
                 }
             }

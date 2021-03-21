@@ -2,12 +2,18 @@
 
 namespace PolyTics.Photon.Client.Realtime
 {
-    using System;
-
+    /// <summary>
+    /// A class that holds parameters of an outgoing SetProperties request that tries to set actor properties.
+    /// </summary>
     public class ActorPropertiesRequest : SetPropertiesRequest
     {
+        /// <summary>
+        /// Actor number of the actor whose properties should be set.
+        /// </summary>
         public int TargetActorNumber;
-
+        /// <summary>
+        /// Nickname to set for the target actor.
+        /// </summary>
         public string Nickname
         {
             get
@@ -23,7 +29,8 @@ namespace PolyTics.Photon.Client.Realtime
 
         public override string ToString()
         {
-            return string.Format("ActorPropertiesRequest TargetActorNumber:{0} PropertiesSent:{1} ExpectedPropertiesSent:{2}", this.TargetActorNumber, this.properties.PrintParams(typeof(GamePropertyKey)), this.expectedProperties.PrintParams(typeof(GamePropertyKey)));
+            return
+                $"ActorPropertiesRequest TargetActorNumber:{this.TargetActorNumber} Properties:{this.properties.PrintParams(typeof(GamePropertyKey))} ExpectedProperties:{this.expectedProperties.PrintParams(typeof(GamePropertyKey))}";
         }
     }
 }
