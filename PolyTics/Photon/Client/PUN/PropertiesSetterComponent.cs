@@ -9,8 +9,10 @@ namespace PolyTics.Photon.Client.PUN
     public class PropertiesSetterComponent : MonoBehaviour
     {
         private PropertiesSetter propertiesSetter;
+        #pragma warning disable 649
         [SerializeField] private bool clearOnLeave, clearOnDisconnect, queueUntilJoined;
         [SerializeField] private int maxFailure;
+        #pragma warning restore 649
 
         private void Awake()
         {
