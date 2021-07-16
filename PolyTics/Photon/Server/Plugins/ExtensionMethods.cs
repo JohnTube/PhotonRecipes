@@ -12,7 +12,7 @@ namespace PolyTics.Photon.Server.Plugins
         public static bool TryGetActorByNumber(this IPluginHost pluginHost, int actorNr, out IActor actor)
         {
             actor = pluginHost.GameActors.FirstOrDefault(a => a.ActorNr == actorNr);
-            return actor == default;
+            return actor != default;
         }
 
         public static bool TryGetActorByUserId(this IPluginHost pluginHost, string userId, out IActor actor)
@@ -23,7 +23,7 @@ namespace PolyTics.Photon.Server.Plugins
                 return false;
             }
             actor = pluginHost.GameActors.FirstOrDefault(a => userId.Equals(a.UserId));
-            return actor == default;
+            return actor != default;
         }
 
         #endregion
