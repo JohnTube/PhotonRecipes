@@ -1,6 +1,6 @@
-﻿JohnTubeusing Photon.Realtime;
+﻿using Photon.Realtime;
 
-namespace PolyTics.Photon.Client.Realtime
+namespace JohnTube.Photon.Client.Realtime
 {
     using System.Collections.Generic;
     using ExitGames.Client.Photon;

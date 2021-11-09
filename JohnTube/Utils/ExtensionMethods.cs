@@ -1,4 +1,4 @@
-﻿JohnTubenamespace PolyTics.Utils
+﻿namespace JohnTube.Utils
 {
     using System;
     using System.Collections;

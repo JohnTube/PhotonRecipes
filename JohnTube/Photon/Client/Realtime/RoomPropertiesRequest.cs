@@ -1,6 +1,6 @@
-﻿JohnTubeusing Photon.Realtime;
+﻿using Photon.Realtime;
 
-namespace PolyTics.Photon.Client.Realtime
+namespace JohnTube.Photon.Client.Realtime
 {
     /// <summary>
     /// A class that holds parameters of an outgoing SetProperties request that tries to set room properties.
