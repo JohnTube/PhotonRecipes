@@ -1,4 +1,4 @@
-﻿namespace PolyTics.Photon.Client
+﻿JohnTubenamespace PolyTics.Photon.Client
 {
     using Utils;
     using System;

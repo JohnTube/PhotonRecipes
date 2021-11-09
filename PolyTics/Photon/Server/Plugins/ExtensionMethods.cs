@@ -1,4 +1,4 @@
-namespace JohnTube.Photon.Server.Plugins
+JohnTubenamespace JohnTube.Photon.Server.Plugins
 {
     using System.Collections;
     using System.Collections.Generic;

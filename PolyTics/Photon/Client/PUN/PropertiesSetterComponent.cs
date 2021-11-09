@@ -1,6 +1,6 @@
 ﻿using Photon.Pun;
 
-namespace PolyTics.Photon.Client.PUN
+namespace JohnTube.Photon.Client.PUN
 {
     using System;
     using Realtime;
